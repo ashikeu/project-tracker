@@ -1,0 +1,35 @@
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/logs/
+*.user
+*.suo
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/build/
+mobile/.idea/
+mobile/**/*.iml
+mobile/.pub-cache/
+mobile/.pub/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (never commit real credentials)
+**/appsettings.Production.json
+**/appsettings.Development.json
+**/appsettings.*.local.json
+*.pfx
+
+# Uploaded files (local file storage root)
+**/App_Data/

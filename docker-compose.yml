@@ -1,0 +1,44 @@
+# Local dev stack: SQL Server + the API. The API waits for the DB healthcheck, then migrates and
+# seeds on startup. Bring it up with:  docker compose up --build
+# API:     http://localhost:8080  (Swagger at /swagger, health at /health)
+# SQL:     localhost:1433  (sa / the password below)
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Your_strong_Pass123"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      # SQL auth (Windows auth from the local README is for running the API on the host, not in Linux containers).
+      ConnectionStrings__DefaultConnection: "Server=db;Database=ProjectTracker;User Id=sa;Password=Your_strong_Pass123;TrustServerCertificate=True;MultipleActiveResultSets=true"
+      Jwt__SigningKey: "docker-compose-local-signing-key-please-change-me-32+"
+      FileStorage__RootPath: "/app/App_Data/uploads"
+    ports:
+      - "8080:8080"
+    volumes:
+      - api-uploads:/app/App_Data
+
+volumes:
+  mssql-data:
+  api-uploads:
